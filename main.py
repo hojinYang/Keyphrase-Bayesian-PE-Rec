@@ -68,12 +68,18 @@ def main(args):
         #U,I,T = [num_data,dim]
         for q in args.query:
             result = simulator(test_df, I, T, args.prec_W, args.prec_item, args.prec_tag, args.alpha,\
-                r_ui, t_ut, t_it, query_ranker=queries[q], k=args.k, step=args.step)
+                r_ui, t_ut, t_it, sim_type=args.sim_type, query_ranker=queries[q], k=args.k, step=args.step)
 
             temp = {}
             temp['fold'] = np.array([f]*(args.step + 1))
             temp['step'] = np.arange(args.step + 1)
             temp['query'] = np.array([q]*(args.step + 1))
+
+            temp['prec_tag'] = np.array([args.prec_tag]*(args.step + 1)) 
+            temp['prec_item'] = np.array([args.prec_item]*(args.step + 1))
+            temp['prec_W'] = np.array([args.prec_W]*(args.step + 1))
+            temp['sim_type'] = np.array([args.sim_type]*(args.step + 1))
+
             for k in args.k:
                 avg = np.mean(result[k],axis=0)
                 temp['hr@'+str(k)]=avg
@@ -89,13 +95,14 @@ if __name__ == "__main__":
     # Commandline arguments
     parser = argparse.ArgumentParser(description="p")
 
-    parser.add_argument('--step', dest='step', type=check_int_positive, default=7, help='Num of steps for elicitation process')
+    parser.add_argument('--step', dest='step', type=check_int_positive, default=5, help='Num of steps for elicitation process')
     parser.add_argument('--iter', dest='iter', type=check_int_positive, default=10, help='fast SVD iteraton')
     parser.add_argument('--lamb', dest='lamb', type=check_float_positive, default=1, help='weight for regularization')
     parser.add_argument('--prec_W', dest='prec_W', type=check_float_positive, default=0.1, help='precision used in weight matrix')
     parser.add_argument('--prec_item', dest='prec_item', type=check_float_positive, default=0.001, help='precision used in item likelihood')
     parser.add_argument('--prec_tag', dest='prec_tag', type=check_float_positive, default=10, help='precision used in tag likelihood')
     parser.add_argument('--model', dest='model', default='PureSVD')
+    parser.add_argument('--sim_type', dest='sim_type', default='all', help='all or subset')
     parser.add_argument('--rank', dest='rank', default=128, help='hidden dim')
     parser.add_argument('--dpath', dest='dpath', default="data/movielens")
     parser.add_argument('--fold', dest='fold', type=str, nargs= '+', default=[1,2,3,4,5])
