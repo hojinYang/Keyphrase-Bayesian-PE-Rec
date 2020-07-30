@@ -91,10 +91,10 @@ def main(args):
 if __name__ == "__main__":
     # Commandline arguments
     parser = argparse.ArgumentParser(description="Data Preprocess")
-    parser.add_argument('--dir', dest= 'data_dir', default='data/')
-    parser.add_argument('--cv_id', dest='cv')
+    parser.add_argument('--dir', dest= 'data_dir', default='data/lastfm')
+    parser.add_argument('--cv_id', dest='cv', default='1')
     parser.add_argument('--test', dest='test', action='store_true')
-    parser.add_argument('--num_sample', dest='n', type=int, default=3)
+    parser.add_argument('--num_sample', dest='n', type=int, default=5)
     args = parser.parse_args()
 
     main(args)

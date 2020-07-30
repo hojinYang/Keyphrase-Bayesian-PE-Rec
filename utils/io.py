@@ -9,6 +9,11 @@ def get_csr_matrix(df, rowname, colname, value=None, shape=None):
 
 
 def get_test_df(ratings_tr, tags_tr, tags_val):
+    
+    '''
+    Remove user/item/tag which only exist in validation set(remove cold-start case) 
+    '''
+    
     valid_user = ratings_tr['userId'].unique()
     valid_item = ratings_tr['itemId'].unique()
     valid_tag = tags_tr['tagId'].unique()

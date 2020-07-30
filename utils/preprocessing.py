@@ -55,8 +55,9 @@ def preprocess_tags(tags, tag_user_threshold, tag_item_threshold):
     stemming tags and remove rare tags. 
     '''
     tags = tags[['userId','itemId','tag']]
-    tt = tags['tag'].apply(lambda x: x.lower().replace('.', ''))
-    tags.loc[:,'tag'] = tt
+    tags['tag'] = tags['tag'].apply(lambda x: x.lower().replace('.', ''))
+    #tags.loc[:,'tag'] = tt
+    
     if tag_item_threshold > 1:
         #limit the vocabulary of tags to those that have been applied by at least "tag_item_threshold" items
         counter = tags.groupby('tag')['itemId'].apply(lambda x: len(set(x))).to_frame('count').reset_index()

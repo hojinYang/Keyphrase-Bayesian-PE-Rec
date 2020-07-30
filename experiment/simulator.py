@@ -3,151 +3,100 @@ from tqdm import tqdm
 from sklearn.metrics.pairwise import cosine_similarity
 from models.regressions import get_predictive_dist, update_posterior,get_user_dist 
 
-def simulator(df_UIT, item_emb, tag_emb, prec_W, prec_item, prec_tag, alpha, r_ui, s_ut, t_it, sim_type, k,step, query_ranker, threshold=5, gpu=False):
-    #3, 5
-    result = dict()
-    for n in k:
-        result[n] = []
+
+class Simulator:
+    def __init__(self, item_emb, tag_emb, r_ui, t_it, k,tau, step, prec_W, prec_item, prec_tag, query_ranker, alpha):
         
-    for uit in tqdm(df_UIT.itertuples()):
-        res = user_simulator(uit, item_emb, tag_emb, prec_W, prec_item, prec_tag, alpha, r_ui, s_ut, t_it, sim_type, k,step,query_ranker, threshold, gpu)
-        if res is not None:
-            for n in k:
-                result[n].append(res[n])
-    return result
+        self.item_emb  = item_emb
+        self.tag_emb = tag_emb
+        self.r_ui = r_ui
+        self.t_it = t_it
+        self.k = k
+        self.tau = tau
+        self.step = step
+        self.alpha = alpha
 
-def user_simulator(uit, item_emb, tag_emb, prec_W, prec_item, prec_tag, alpha, r_ui, s_ut, t_it, sim_type, k,step,query_ranker, threshold, gpu=False):
-    result = dict()
-    for n in k:
-        result[n] = []
-    redun_queries = []
-    item_tags = t_it[uit.itemId].nonzero()[1]
-    if sim_type == 'subset':
-        relevant_tags = get_similar_tags(uit.tagIds, tag_emb)
-    elif sim_type == 'all':
-        relevant_tags = item_tags
+        self.prec_W = prec_W
+        self.prec_item = prec_item
+        self.prec_tag = prec_tag
+        self.query_ranker = query_ranker
 
-    if len(relevant_tags) <threshold:
-        return None
-    
-    #banned_queries = np.setdiff1d(item_tags, relevant_tags).tolist()
-    #banned_queries = []
-    #redun_queries += banned_queries
-    redun_queries = []
-    vector_train = r_ui[uit.userId]
-    
-    #max_val = float(s_ut[uit.userId].max(axis=1).todense())
-    S, m = get_user_dist(uit.userId, r_ui, item_emb, prec_W=prec_W, prec_y=prec_item)
+        self.global_sum = np.squeeze(np.asarray(self.t_it.sum(axis=0)))
 
-    pred_v, pred_m = get_predictive_dist(tag_emb.T, S, m, prec_tag)
-    max_val = 3
-    #max_val = np.max(pred_m)
-    #print(np.max(pred_m))    
-    #m = np.mean(user_emb,axis=0).reshape((-1,1))
-    vector_predict = sub_routine(m, item_emb, vector_train, max(k), gpu=gpu)
-    for n in k:
-        result[n].append(hr_k(vector_predict,uit.itemId, n))
-    for _ in range(step):
-        pred_v, pred_m = get_predictive_dist(tag_emb.T, S, m, prec_tag)
+    def user_simulator(self, user, target_item, tags):
+        
+        result = {k:[] for k in self.k}
 
-        query_rank = query_ranker(pred_v=pred_v, pred_m=pred_m, alpha=alpha)
-        query = select_single_question(query_rank, redun_queries)
-        redun_queries.append(query)
+        #tags = get_similar_tags(tags,self.tag_emb)
+        
+        #TODO: how should we model user's response? Should we ban unpredictable queries?
+        item_tags = (self.t_it[target_item]>=5).nonzero()[1].tolist() + tags
+        #item_tags = self.t_it[target_item].nonzero()[1]
+        #banned_queries = np.setdiff1d(item_tags, tags).tolist()
+        
+        user_history = self.r_ui[user]
 
-        user_response = get_user_reponse(query, relevant_tags)
-        X = tag_emb[query].reshape((-1,1))
-        Y = np.array([[user_response*max_val]])
+        #queries in redun_queires will not be asked 
+        #redun_queries = [] + banned_queries
+        redun_queries = []
 
-        S, m =  update_posterior(X, Y, S, m, prec_tag)
+        S, m = get_user_dist(user, self.r_ui, self.item_emb, prec_W=self.prec_W, prec_y=self.prec_item)
+        #S, m = (1/self.prec_W)*np.identity(self.item_emb.shape[1]), np.zeros((self.item_emb.shape[1],1))
+        #S, m = (1/self.prec_W)*np.identity(self.item_emb.shape[1]), np.mean(self.item_emb,axis=0,keepdims=True).T
+        vector_predict = sub_routine(m, self.item_emb, user_history, max(self.k))
+        
+        #initial prediction
+        for n in self.k:
+            result[n].append(hr_k(vector_predict,target_item, n))
+        
+        for _ in range(self.step):
+            pred_v, pred_m = get_predictive_dist(self.tag_emb.T, S, m, self.prec_tag)
+            query_rank = self.query_ranker(pred_v=pred_v, pred_m=pred_m, alpha=self.alpha, global_sum=self.global_sum)
+            query = self.select_single_question(query_rank, redun_queries)
+            redun_queries.append(query)
 
-        vector_predict = sub_routine(m, item_emb, vector_train, max(k), gpu=gpu)
-        for n in k:
-            result[n].append(hr_k(vector_predict,uit.itemId, n))
+            user_response = self.get_user_reponse(query, item_tags)
+            X = self.tag_emb[query].reshape((-1,1))
+            Y = np.array([[user_response * self.tau]])
 
-    return result
+            S, m =  update_posterior(X, Y, S, m, self.prec_tag)
+            
+            #updated prediction
+            vector_predict = sub_routine(m, self.item_emb, user_history, max(self.k))
+            for n in self.k:
+                result[n].append(hr_k(vector_predict,target_item, n))
 
-def select_single_question(rank, redun_tags):
-    rank = np.delete(rank, np.isin(rank, redun_tags).nonzero()[0])
-    return rank[0]
+        return result
 
-def get_user_reponse(query_tags, relevant_tags):
-    return np.isin(query_tags, relevant_tags)
+    def select_single_question(self, rank, redun_tags):
+        rank = np.delete(rank, np.isin(rank, redun_tags).nonzero()[0])
+        return rank[0]
+
+    def get_user_reponse(self, query_tags, relevant_tags):
+        return np.isin(query_tags, relevant_tags)
+
+
+def sub_routine(vector_u, item_emb, user_history, topK):
+    train_index = user_history.nonzero()[1]
+    vector_predict = item_emb.dot(vector_u).flatten() 
+
+    candidate_index = np.argpartition(-vector_predict, topK+len(train_index))[:topK+len(train_index)]
+    vector_predict = candidate_index[vector_predict[candidate_index].argsort()[::-1]]
+    vector_predict = np.delete(vector_predict, np.isin(vector_predict, train_index).nonzero()[0])
+
+    return vector_predict
+
+
+def hr_k(preds,target, k):
+    if target in set(preds[:k]):
+        return 1
+
+    else:
+        return 0
+
 
 def get_similar_tags(given_tags, tag_emb, sim=0.95):
     #sim 0.90
     sim_matrix = cosine_similarity(tag_emb[given_tags], tag_emb)
     similar_tags = np.unique((sim_matrix >= sim).nonzero()[1])
     return similar_tags
-
-def sub_routine(vector_u, item_emb, vector_train, topK, gpu=False):
-    train_index = vector_train.nonzero()[1]
-    vector_predict = item_emb.dot(vector_u).flatten()
-
-    if gpu:
-        import cupy as cp
-        candidate_index = cp.argpartition(-vector_predict, topK+len(train_index))[:topK+len(train_index)]
-        vector_predict = candidate_index[vector_predict[candidate_index].argsort()[::-1]]
-        vector_predict = cp.asnumpy(vector_predict).astype(np.float32)
-    else:
-        candidate_index = np.argpartition(-vector_predict, topK+len(train_index))[:topK+len(train_index)]
-        vector_predict = candidate_index[vector_predict[candidate_index].argsort()[::-1]]
-    vector_predict = np.delete(vector_predict, np.isin(vector_predict, train_index).nonzero()[0])
-    return vector_predict
-
-def hr_k(preds,target, k):
-    if target in set(preds[:k]):
-        return 1
-    else:
-        return 0
-
-def singleshot_simulator(df_UIT, user_emb, item_emb, tag_emb, inf_user, inf_item, inf_bias, r_ui, t_it, k, threshold=5, gpu=False):
-    #3, 5
-    result = dict()
-    for n in k:
-        result[n] = []
-    
-    for uit in tqdm(df_UIT.itertuples()):
-        res = singleshot_user_simulator(uit, user_emb, item_emb, tag_emb, inf_user, inf_item, inf_bias, r_ui, t_it, k, threshold, gpu)
-        if res is not None:
-            for n in k:
-                result[n].append(res[n])
-    print(len(result[1]))
-    return result
-
-def singleshot_user_simulator(uit, user_emb, item_emb, tag_emb, inf_user, inf_item, inf_bias, r_ui, t_it, k, threshold, gpu=False):
-    result = dict()
-    for n in k:
-        result[n] = []
-
-    item_tags = t_it[uit.itemId].nonzero()[1]
-    relevant_tags = get_similar_tags(uit.tagIds, tag_emb)
-    #relevant_tags = item_tags
-
-    if len(relevant_tags) <threshold:
-        return None
-    
-    vector_train = r_ui[uit.userId]
-    
-    m = inf_user[uit.userId].reshape((-1,1))
-
-    vector_predict = singleshot_sub_routine(m, inf_item, inf_bias, vector_train, max(k), gpu=gpu)
-    for n in k:
-        result[n].append(hr_k(vector_predict,uit.itemId, n))
-
-    return result
-
-def singleshot_sub_routine(vector_u, item_emb, bias, vector_train, topK, gpu=False):
- 
-    train_index = vector_train.nonzero()[1]
-    vector_predict = item_emb.dot(vector_u).flatten() +bias
-
-    if gpu:
-        import cupy as cp
-        candidate_index = cp.argpartition(-vector_predict, topK+len(train_index))[:topK+len(train_index)]
-        vector_predict = candidate_index[vector_predict[candidate_index].argsort()[::-1]]
-        vector_predict = cp.asnumpy(vector_predict).astype(np.float32)
-    else:
-        candidate_index = np.argpartition(-vector_predict, topK+len(train_index))[:topK+len(train_index)]
-        vector_predict = candidate_index[vector_predict[candidate_index].argsort()[::-1]]
-    vector_predict = np.delete(vector_predict, np.isin(vector_predict, train_index).nonzero()[0])
-    return vector_predict

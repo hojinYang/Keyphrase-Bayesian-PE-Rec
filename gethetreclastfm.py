@@ -58,7 +58,7 @@ if __name__ == "__main__":
     parser.add_argument('--uat', dest='uatname', default='user_taggedartists.dat')
     parser.add_argument('--artist', dest='aname', default='artists.dat')
     parser.add_argument('--tag', dest='tname', default='tags.dat')
-    parser.add_argument('--tu', dest='tag_user_threshold', default=5)
+    parser.add_argument('--tu', dest='tag_user_threshold', default=3)
     parser.add_argument('--ti', dest='tag_item_threshold', default=3)
     parser.add_argument('--k', dest='k', default=5)
     parser.add_argument('--ratio', dest='val_ratio', default=0.3)

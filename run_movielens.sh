@@ -5,22 +5,47 @@
 #python gettags.py --dir data/movielens --cv_id 4 --test
 #python gettags.py --dir data/movielens --cv_id 5 --test
 
-#python main.py --dpath data/movielens --test --spath table/movielens --sname main-type2.csv --fold 2 
-#python main.py --dpath data/movielens --test --spath table/movielens --sname main-type2.csv --fold 3 
-#python main.py --dpath data/movielens --test --spath table/movielens --sname main-type2.csv --fold 4 
-#python main.py --dpath data/movielens --test --spath table/movielens --sname main-type2.csv --fold 5 
+#python main.py --dpath data/movielens --test --spath table/movielens --sname main-all-tag-weight.csv --fold 1 --sim_type all --num_sample 10000 --query POP UCB --prec_tag 0.001
+#python main.py --dpath data/movielens --test --spath table/movielens --sname main-all-tag-weight.csv --fold 1 --sim_type all --num_sample 10000 --query POP UCB --prec_tag 0.01
+#python main.py --dpath data/movielens --test --spath table/movielens --sname main-all-tag-weight.csv --fold 1 --sim_type all --num_sample 10000 --query POP UCB --prec_tag 0.1
+#python main.py --dpath data/movielens --test --spath table/movielens --sname main-all-tag-weight.csv --fold 1 --sim_type all --num_sample 10000 --query POP UCB --prec_tag 1.0
+#python main.py --dpath data/movielens --test --spath table/movielens --sname main-all-tag-weight.csv --fold 1 --sim_type all --num_sample 10000 --query POP UCB --prec_tag 10
 
-#python main.py --dpath data/movielens --test --spath table/movielens --sname main-type2.csv --fold 1 
-#python main.py --dpath data/movielens --test --spath table/movielens --prec_item 0.001 --prec_tag 100000 --sname main-type2-prec-tag-test.csv --fold 1 --query UCB
-#python main.py --dpath data/movielens --test --spath table/movielens --prec_item 0.001 --prec_tag 0.001 --sname main-type2-prec-tag-test.csv --fold 1 --query UCB
-#python main.py --dpath data/movielens --test --spath table/movielens --prec_item 0.001 --prec_tag 0.1 --sname main-type2-prec-tag-test.csv --fold 1 --query UCB
-#python main.py --dpath data/movielens --test --spath table/movielens --prec_item 0.001 --prec_tag 1000000000 --sname main-type2-prec-tag-test.csv --fold 1 --query UCB
+#python main.py --dpath data/movielens --test --spath table/movielens --sname main-all-updated.csv --fold 1 --sim_type all --num_sample 10000 
+#python main.py --dpath data/movielens --test --spath table/movielens --sname main-all-updated.csv --fold 2 --sim_type all --num_sample 10000
+#python main.py --dpath data/movielens --test --spath table/movielens --sname main-all-updated.csv --fold 3 --sim_type all --num_sample 10000
+#python main.py --dpath data/movielens --test --spath table/movielens --sname main-all-updated.csv --fold 4 --sim_type all --num_sample 10000
+#python main.py --dpath data/movielens --test --spath table/movielens --sname main-all-updated.csv --fold 5 --sim_type all --num_sample 10000
 
+#python main.py --dpath data/movielens --test --spath table/movielens --sname main-all-tag-p-test.csv --fold 1 --sim_type all --num_sample 10000 --query UCB --prec_tag 0.01
+#python main.py --dpath data/movielens --test --spath table/movielens --sname main-all-tag-p-test.csv --fold 1 --sim_type all --num_sample 10000 --query UCB --prec_tag 0.1
+#python main.py --dpath data/movielens --test --spath table/movielens --sname main-all-tag-p-test.csv --fold 1 --sim_type all --num_sample 10000 --query UCB --prec_tag 1
+#python main.py --dpath data/movielens --test --spath table/movielens --sname main-all-tag-p-test.csv --fold 1 --sim_type all --num_sample 10000 --query UCB --prec_tag 10
+#python main.py --dpath data/movielens --test --spath table/movielens --sname main-all-tag-p-test.csv --fold 1 --sim_type all --num_sample 10000 --query UCB --prec_tag 0.001
+#python main.py --dpath data/movielens --test --spath table/movielens --sname main-all-tag-p-test.csv --fold 1 --sim_type all --num_sample 10000 --query UCB --prec_tag 0.0001
+#python main.py --dpath data/movielens --test --spath table/movielens --sname main-all-tag-p-test.csv --fold 1 --sim_type all --num_sample 10000 --query UCB --prec_tag 0.00001
 
-#python main.py --dpath data/movielens --test --spath table/movielens --sname main-type1.csv --fold 1 --sim_type subset
-#python main.py --dpath data/movielens --test --spath table/movielens --sname main-type1.csv --fold 2 --sim_type subset
-#python main.py --dpath data/movielens --test --spath table/movielens --sname main-type1.csv --fold 3 --sim_type subset
-#python main.py --dpath data/movielens --test --spath table/movielens --sname main-type1.csv --fold 4 --sim_type subset
-#python main.py --dpath data/movielens --test --spath table/movielens --sname main-type1.csv --fold 5 --sim_type subset
-python main.py --dpath data/movielens --test --spath table/movielens --sname main-type1-fix3.csv --fold 1 --sim_type all --query UCB Mean --prec_tag 0.1
-python main.py --dpath data/movielens --test --spath table/movielens --sname main-type1-fix3.csv --fold 2 --sim_type all --query UCB Mean
+#python main.py --dpath data/movielens --test --spath table/movielens --sname main-all-tag-p-test.csv --fold 2 --sim_type all --num_sample 10000 --query UCB --prec_tag 0.01
+#python main.py --dpath data/movielens --test --spath table/movielens --sname main-all-tag-p-test.csv --fold 2 --sim_type all --num_sample 10000 --query UCB --prec_tag 0.1
+#python main.py --dpath data/movielens --test --spath table/movielens --sname main-all-tag-p-test.csv --fold 2 --sim_type all --num_sample 10000 --query UCB --prec_tag 1
+#python main.py --dpath data/movielens --test --spath table/movielens --sname main-all-tag-p-test.csv --fold 2 --sim_type all --num_sample 10000 --query UCB --prec_tag 10
+#python main.py --dpath data/movielens --test --spath table/movielens --sname main-all-tag-p-test.csv --fold 2 --sim_type all --num_sample 10000 --query UCB --prec_tag 0.001
+#python main.py --dpath data/movielens --test --spath table/movielens --sname main-all-tag-p-test.csv --fold 2 --sim_type all --num_sample 10000 --query UCB --prec_tag 0.0001
+#python main.py --dpath data/movielens --test --spath table/movielens --sname main-all-tag-p-test.csv --fold 2 --sim_type all --num_sample 10000 --query UCB --prec_tag 0.00001
+
+#python main.py --dpath data/movielens --test --spath table/movielens --sname main-all-tag-p-test.csv --fold 3 --sim_type all --num_sample 10000 --query UCB --prec_tag 0.01
+#python main.py --dpath data/movielens --test --spath table/movielens --sname main-all-tag-p-test.csv --fold 3 --sim_type all --num_sample 10000 --query UCB --prec_tag 0.1
+#python main.py --dpath data/movielens --test --spath table/movielens --sname main-all-tag-p-test.csv --fold 3 --sim_type all --num_sample 10000 --query UCB --prec_tag 1
+#python main.py --dpath data/movielens --test --spath table/movielens --sname main-all-tag-p-test.csv --fold 3 --sim_type all --num_sample 10000 --query UCB --prec_tag 10
+#python main.py --dpath data/movielens --test --spath table/movielens --sname main-all-tag-p-test.csv --fold 3 --sim_type all --num_sample 10000 --query UCB --prec_tag 0.001
+#python main.py --dpath data/movielens --test --spath table/movielens --sname main-all-tag-p-test.csv --fold 3 --sim_type all --num_sample 10000 --query UCB --prec_tag 0.0001
+#python main.py --dpath data/movielens --test --spath table/movielens --sname main-all-tag-p-test.csv --fold 3 --sim_type all --num_sample 10000 --query UCB --prec_tag 0.00001
+
+#python main.py --dpath data/movielens --test --spath table/movielens --sname main-all-normalizing.csv --fold 1 --sim_type all --num_sample 10000 --query UCB --not_normalizing --alpha 1
+#python main.py --dpath data/movielens --test --spath table/movielens --sname main-all-normalizing.csv --fold 1 --sim_type all --num_sample 10000 --query UCB --not_normalizing --alpha 10
+#python main.py --dpath data/movielens --test --spath table/movielens --sname main-all-normalizing.csv --fold 1 --sim_type all --num_sample 10000 --query UCB --not_normalizing --alpha 100
+#python main.py --dpath data/movielens --test --spath table/movielens --sname main-all-normalizing.csv --fold 1 --sim_type all --num_sample 10000 --query UCB --not_normalizing --alpha 1000
+#python main.py --dpath data/movielens --test --spath table/movielens --sname main-all-normalizing.csv --fold 1 --sim_type all --num_sample 10000 --query UCB --not_normalizing --alpha 0.1
+#python main.py --dpath data/movielens --test --spath table/movielens --sname main-all-normalizing.csv --fold 1 --sim_type all --num_sample 10000 --query UCB --not_normalizing --alpha 0.01
+#python main.py --dpath data/movielens --test --spath table/movielens --sname main-all-normalizing.csv --fold 1 --sim_type all --num_sample 10000 --query UCB --not_normalizing --alpha 0.001
+#python main.py --dpath data/movielens --test --spath table/movielens --sname main-all-normalizing.csv --fold 1 --sim_type all --num_sample 10000 --query UCB

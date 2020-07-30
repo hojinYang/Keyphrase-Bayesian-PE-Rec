@@ -55,7 +55,7 @@ if __name__ == "__main__":
     parser.add_argument('--tag', dest='tname', default='tags.csv')
     parser.add_argument('--movie', dest='mname', default='movies.csv')
     parser.add_argument('--tu', dest='tag_user_threshold', default=10)
-    parser.add_argument('--ti', dest='tag_item_threshold', default=5)
+    parser.add_argument('--ti', dest='tag_item_threshold', default=10)
     parser.add_argument('--k', dest='k', default=5)
     parser.add_argument('--ratio', dest='val_ratio', default=0.3)
     # parser.add_argument('--rm', dest='minrating', default=0)

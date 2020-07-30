@@ -6,7 +6,7 @@ import numpy as np
 def get_point_estimate(X, Y, lam=0):
     dim = X.shape[1]
     pre_inv = X.T @ X + lam * np.identity(dim)
-    #lamb = prec_w/prec_y
+    #lam = prec_w/prec_y
     inverse = np.linalg.inv(pre_inv)
     W = inverse @ X.T @ Y
     return W
@@ -40,6 +40,5 @@ def bayesian_linear_reg(prec_W, prec_y, X, y):
     return cov, mean
 
 def get_user_dist(uid, r_ui, I, prec_W, prec_y):
-
     return bayesian_linear_reg(prec_W, prec_y, I, r_ui[uid].T)
 
