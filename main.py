@@ -79,17 +79,11 @@ def main(args):
                 result[k].append(result_user[k])
 
     temp = {}
-    temp['fold'] = np.array([f] * (args.step + 1))
+    arg_dict = vars(args)
+    for key, value in arg_dict.items():
+        if key not in ['step', 'dpath', 'spath', 'sname', 'k']:
+            temp[key] = np.array([value] * (args.step + 1))
     temp['step'] = np.arange(args.step + 1)
-    temp['query'] = np.array([args.query] * (args.step + 1))
-
-    temp['prec_tag'] = np.array([args.prec_tag] * (args.step + 1))
-    temp['prec_item'] = np.array([args.prec_item] * (args.step + 1))
-    temp['prec_W'] = np.array([args.prec_W] * (args.step + 1))
-    # temp['sim_type'] = np.array([args.sim_type]*(args.step + 1))
-
-    temp['alpha'] = np.array([args.alpha] * (args.step + 1))
-    # temp['normalizing'] = np.array([args.normalizing]*(args.step + 1))
 
     for k in args.k:
         avg = np.mean(result[k], axis=0)
