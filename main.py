@@ -111,7 +111,7 @@ if __name__ == "__main__":
                         help='precision used in tag likelihood')
     parser.add_argument('--model', dest='model', default='PureSVD')
     # parser.add_argument('--sim_type', dest='sim_type', default='all', help='all or subset')
-    parser.add_argument('--rank', dest='rank', default=128, help='hidden dim')
+    parser.add_argument('--rank', dest='rank', type=check_int_positive, default=128, help='hidden dim')
     parser.add_argument('--dpath', dest='dpath', default="data/movielens")
     parser.add_argument('--fold', dest='fold', type=str, default=1)
     parser.add_argument('--test', dest='test', action='store_true')
