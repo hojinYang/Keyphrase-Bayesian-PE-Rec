@@ -22,7 +22,7 @@ def rank_by_UCB(pred_v, pred_m, alpha=1, threshold=50, **unused):
     #pred_v = (pred_v-min(pred_v))/(max(pred_v)-min(pred_v))
     #pred_m = (pred_m-min(pred_m))/(max(pred_m)-min(pred_m))
 
-    score = pred_v + pred_m
+    score = alpha*pred_v + pred_m
     candidate_index = np.argpartition(-score, threshold)[:threshold]
     rank = candidate_index[score[candidate_index].argsort()[::-1]]
 
