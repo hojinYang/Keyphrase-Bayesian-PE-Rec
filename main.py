@@ -32,21 +32,22 @@ def main(args):
 
     if not os.path.exists(os.path.join(args.spath, args.sname)):
         pd.DataFrame({"fold": [], "step": [], "query": []}).to_csv(os.path.join(args.spath, args.sname), index=False)
-    # check for duplicates
-    output = pd.read_csv(os.path.join(args.spath, args.sname))
-    arg_dict = vars(args)
-    test_duplicate = None
-    progress_format = ''
-    for key, value in arg_dict.items():
-        if key not in ['step', 'dpath', 'spath', 'sname', 'k', 'test']:
-            progress_format += str(key) + ': ' + str(value) + ', '
-            if test_duplicate is None:
-                test_duplicate = output[key] == value
-            else:
-                test_duplicate = test_duplicate & (output[key] == value)
-    if test_duplicate.any():
-        print('skip ' + progress_format)
-        sys.exit()
+    else:
+        # check for duplicates
+        output = pd.read_csv(os.path.join(args.spath, args.sname))
+        arg_dict = vars(args)
+        test_duplicate = None
+        progress_format = ''
+        for key, value in arg_dict.items():
+            if key not in ['step', 'dpath', 'spath', 'sname', 'k', 'test']:
+                progress_format += str(key) + ': ' + str(value) + ', '
+                if test_duplicate is None:
+                    test_duplicate = output[key] == value
+                else:
+                    test_duplicate = test_duplicate & (output[key] == value)
+        if test_duplicate.any():
+            print('skip ' + progress_format)
+            sys.exit()
 
     f = str(args.fold)
     ratings_tr = pd.read_csv(os.path.join(args.dpath, 'tr_ratings' + f + '.csv'))
