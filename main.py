@@ -9,6 +9,7 @@ from utils.querynames import queries
 from models.regressions import get_point_estimate
 from experiment.simulator import Simulator
 from tqdm import tqdm
+import sys
 
 
 def check_int_positive(value):
@@ -31,6 +32,21 @@ def main(args):
 
     if not os.path.exists(os.path.join(args.spath, args.sname)):
         pd.DataFrame({"fold": [], "step": [], "query": []}).to_csv(os.path.join(args.spath, args.sname), index=False)
+    # check for duplicates
+    output = pd.read_csv(os.path.join(args.spath, args.sname))
+    arg_dict = vars(args)
+    test_duplicate = None
+    progress_format = ''
+    for key, value in arg_dict.items():
+        if key not in ['step', 'dpath', 'spath', 'sname', 'k', 'test']:
+            progress_format += str(key) + ': ' + str(value) + ', '
+            if test_duplicate is None:
+                test_duplicate = output[key] == key
+            else:
+                test_duplicate = test_duplicate & (output[key] == key)
+    if test_duplicate.any():
+        print('skip ' + progress_format)
+        sys.exit()
 
     f = str(args.fold)
     ratings_tr = pd.read_csv(os.path.join(args.dpath, 'tr_ratings' + f + '.csv'))
@@ -98,7 +114,7 @@ if __name__ == "__main__":
     # Commandline arguments
     parser = argparse.ArgumentParser(description="p")
 
-    parser.add_argument('--step', dest='step', type=check_int_positive, default=7,
+    parser.add_argument('--step', dest='step', type=check_int_positive, default=10,
                         help='Num of steps for elicitation process')
     parser.add_argument('--iter', dest='iter', type=check_int_positive, default=10, help='fast SVD iteraton')
     parser.add_argument('--lamb', dest='lamb', type=check_float_positive, default=0.001,
