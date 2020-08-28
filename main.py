@@ -41,9 +41,9 @@ def main(args):
         if key not in ['step', 'dpath', 'spath', 'sname', 'k', 'test']:
             progress_format += str(key) + ': ' + str(value) + ', '
             if test_duplicate is None:
-                test_duplicate = output[key] == key
+                test_duplicate = output[key] == value
             else:
-                test_duplicate = test_duplicate & (output[key] == key)
+                test_duplicate = test_duplicate & (output[key] == value)
     if test_duplicate.any():
         print('skip ' + progress_format)
         sys.exit()
