@@ -130,7 +130,7 @@ if __name__ == "__main__":
     # parser.add_argument('--sim_type', dest='sim_type', default='all', help='all or subset')
     parser.add_argument('--rank', dest='rank', type=check_int_positive, default=128, help='hidden dim')
     parser.add_argument('--dpath', dest='dpath', default="data/movielens")
-    parser.add_argument('--fold', dest='fold', type=str, default=1)
+    parser.add_argument('--fold', dest='fold', type=int, default=1)
     parser.add_argument('--test', dest='test', action='store_true')
     parser.add_argument('--k', dest='k', type=int, nargs='+', default=[1, 3, 5, 7, 10, 15, 20])
     # parser.add_argument('--corruption', dest='corruption', default=0)
