@@ -23,6 +23,9 @@ def check_float_positive(value):
          raise argparse.ArgumentTypeError("%s is an invalid positive float value" % value)
     return ivalue
 
+from scipy.sparse import load_npz
+def load_numpy(path, name):
+    return load_npz(path+name).tocsr()
 
 def main(args):
     if not os.path.exists(args.spath):
@@ -32,29 +35,41 @@ def main(args):
         pd.DataFrame({"fold":[],"step":[],"query":[]}).to_csv(os.path.join(args.spath,args.sname),index=False)    
     
     f= str(args.fold)
-    ratings_tr = pd.read_csv(os.path.join(args.dpath, 'tr_ratings'+f+'.csv'))
+    #ratings_tr = pd.read_csv(os.path.join(args.dpath, 'tr_ratings'+f+'.csv'))
 
+
+    r_ui = load_numpy('./data/beers/','Rtrain.npz')
+    t_ut = load_numpy('./data/beers/','Rtrain_keyphrase.npz')
+    t_it = load_numpy('./data/beers/','Rtrain_item_keyphrase.npz').T
+    print(r_ui.shape)
+    print(t_ut.shape)
+    print(t_it.shape)
+
+    vr_ui = load_numpy('./data/beers/','Rtest.npz')
+    print(vr_ui.shape)
+    '''
     if args.test:
         ratings_val = pd.read_csv(os.path.join(args.dpath, 'val_ratings'+f+'.csv'))
         ratings_tr = ratings_tr.append(ratings_val, ignore_index=True)
         tags_tr = pd.read_csv(os.path.join(args.dpath, 'tr_tags'+f+'.csv'))
-        tags_tr = tags_tr.append(pd.read_csv(os.path.join(args.dpath,'val_tags'+f+'.csv')),ignore_index=True)
+        tags_tr.append(pd.read_csv(os.path.join(args.dpath,'val_tags'+f+'.csv')),ignore_index=True)
         tags_te = pd.read_csv(os.path.join(args.dpath, 'te_tags'+f+'.csv'))
 
     else:
         tags_tr = pd.read_csv(os.path.join(args.dpath, 'tr_tags'+f+'.csv'))
         tags_te = pd.read_csv(os.path.join(args.dpath, 'val_tags'+f+'.csv'))
-
+    
     r_ui = get_csr_matrix(ratings_tr, 'userId','itemId')
     t_ut = get_csr_matrix(tags_tr,'userId','tagId')
     t_ut.resize(r_ui.shape[0],t_ut.shape[1])
     t_it = get_csr_matrix(tags_tr,'itemId','tagId')
-    
+    '''
     # set threshold    
     t_ut[t_ut>args.tau] = args.tau
-    test_list = get_test_df(ratings_tr,tags_tr,tags_te).values.tolist()
-    del ratings_tr, tags_tr, tags_te
-    
+    ui = vr_ui.nonzero()
+    #test_list = get_test_df(ratings_tr,tags_tr,tags_te).values.tolist()
+    #del ratings_tr, tags_tr, tags_te
+
     # Generate User-Item embedding matrix using SVD
     U, It, _ = models[args.model](r_ui, embeded_matrix=np.empty((0)),
                                         iteration=args.iter, rank=args.rank,
@@ -71,11 +86,16 @@ def main(args):
     
     result = {k:[] for k in args.k}
     #run simulator
-    for u,i,t in tqdm(test_list):
-        if len(t)>=3:
-            result_user = sim.user_simulator(u,i,t)
-            for k in args.k:
-                result[k].append(result_user[k])
+    print(ui[0])
+    print(ui[1])
+    #c = 0
+    for u,i in tqdm(zip(ui[0], ui[1])):
+        #c += 1
+        result_user = sim.user_simulator(u,i,[])
+        for k in args.k:
+            result[k].append(result_user[k])
+        #if c >= 3000:
+        #    break
 
     temp = {}
     temp['fold'] = np.array([f]*(args.step + 1))
@@ -110,23 +130,22 @@ if __name__ == "__main__":
     parser.add_argument('--prec_tag', dest='prec_tag', type=check_float_positive, default=0.01, help='precision used in tag likelihood')
     parser.add_argument('--model', dest='model', default='PureSVD')
     #parser.add_argument('--sim_type', dest='sim_type', default='all', help='all or subset')
-    parser.add_argument('--rank', dest='rank', type=int, default=50, help='hidden dim')
+    parser.add_argument('--rank', dest='rank', default=50, help='hidden dim')
     parser.add_argument('--dpath', dest='dpath', default="data/lastfm")
     parser.add_argument('--fold', dest='fold', type=str, default=1)
     parser.add_argument('--test', dest='test', action='store_true')
     parser.add_argument('--k', dest='k', type=int, nargs= '+', default=[1,3,5,7,10,15,20])
     #parser.add_argument('--corruption', dest='corruption', default=0)
     parser.add_argument('--seed', dest='seed', default=0)
-    parser.add_argument('--alpha', dest='alpha', type=check_float_positive,default=1, help='leverage on varince used in UCB')
-    parser.add_argument('--query', dest='query',type=str, default='UCB')
-    parser.add_argument('--spath', dest='spath',type=str,default='table/lastfm')
-    parser.add_argument('--sname', dest='sname',type=str,default='main.csv')
+    parser.add_argument('--alpha', dest='alpha', type=check_float_positive,default=10, help='leverage on varince used in UCB')
+    parser.add_argument('--query', dest='query',type=str, default='Mean')
+    parser.add_argument('--spath', dest='spath',type=str,default='table/beers')
+    parser.add_argument('--sname', dest='sname',type=str,default='main30.csv')
     parser.add_argument('--tau', dest='tau', type=check_int_positive, default=5, help='maximum_tag_value')
     #parser.add_argument('--not_normalizing', dest='normalizing', action='store_false')
     args = parser.parse_args()
 
     main(args)
-    #w  item tag dim tau
-    #0.0001 0.01 0.01 50 5
+
+    #0.01 50
     #0.001 1
-    #python main.py --fold 1 --query UCB --test --sname test28.csv --prec_tag 0.1 --prec_item 0.0001 --tau 5 --alpha 0.1 --rank 128 --dpath data/movielens --spath table/movielens

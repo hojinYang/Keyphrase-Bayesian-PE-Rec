@@ -30,6 +30,7 @@ class Simulator:
         #tags = get_similar_tags(tags,self.tag_emb)
         
         #TODO: how should we model user's response? Should we ban unpredictable queries?
+        #item_tags = (self.t_it[target_item]>=10).nonzero()[1].tolist() + tags
         item_tags = (self.t_it[target_item]>=5).nonzero()[1].tolist() + tags
         #item_tags = self.t_it[target_item].nonzero()[1]
         #banned_queries = np.setdiff1d(item_tags, tags).tolist()
@@ -40,20 +41,28 @@ class Simulator:
         #redun_queries = [] + banned_queries
         redun_queries = []
 
-        S, m = get_user_dist(user, self.r_ui, self.item_emb, prec_W=self.prec_W, prec_y=self.prec_item)
+        #S, m = get_user_dist(user, self.r_ui, self.item_emb, prec_W=self.prec_W, prec_y=self.prec_item)
         #S, m = (1/self.prec_W)*np.identity(self.item_emb.shape[1]), np.zeros((self.item_emb.shape[1],1))
-        #S, m = (1/self.prec_W)*np.identity(self.item_emb.shape[1]), np.mean(self.item_emb,axis=0,keepdims=True).T
+        S, m = (1/self.prec_W)*np.identity(self.item_emb.shape[1]), np.mean(self.item_emb,axis=0,keepdims=True).T
         vector_predict = sub_routine(m, self.item_emb, user_history, max(self.k))
         
         #initial prediction
         for n in self.k:
             result[n].append(hr_k(vector_predict,target_item, n))
-        
+        alpha = self.alpha
         for _ in range(self.step):
+            
             pred_v, pred_m = get_predictive_dist(self.tag_emb.T, S, m, self.prec_tag)
-            query_rank = self.query_ranker(pred_v=pred_v, pred_m=pred_m, alpha=self.alpha, global_sum=self.global_sum)
+            #query_rank = self.query_ranker(pred_v=pred_v, pred_m=pred_m, alpha=self.alpha, global_sum=self.global_sum)
+            query_rank = self.query_ranker(global_sum=self.global_sum,pred_v=pred_v, pred_m=pred_m, alpha=alpha, item_emb=self.item_emb, tag_emb=self.tag_emb,\
+                tau = self.tau, S = S, m = m, prec_tag = self.prec_tag, user_history=user_history)
+            
+            #alpha = alpha * 0.5
+            #print(alpha)
+            
             query = self.select_single_question(query_rank, redun_queries)
             redun_queries.append(query)
+            
 
             user_response = self.get_user_reponse(query, item_tags)
             X = self.tag_emb[query].reshape((-1,1))

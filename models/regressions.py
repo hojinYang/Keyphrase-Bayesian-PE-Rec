@@ -16,9 +16,11 @@ def get_point_estimate(X, Y, lam=0):
 
 def update_posterior(x, y, S_0, m_0, prec_y):
     S_0_inv = np.linalg.inv(S_0)
-    S_1 = np.linalg.inv(S_0_inv +prec_y * x @ x.T)    
+    #S_1 = np.linalg.inv(S_0_inv +prec_y * x @ x.T)    
+    #print(np.swapaxes(x,-2,-1).shape)
+    S_1 = np.linalg.inv(S_0_inv +prec_y * np.matmul(x,np.swapaxes(x,-2,-1)))
     m_1 = S_1 @ (S_0_inv @ m_0 + prec_y * y * x)
-
+    #print(m_1.shape)
     return S_1, m_1
 
 def get_predictive_dist(x_pred, S, m, prec_y):
